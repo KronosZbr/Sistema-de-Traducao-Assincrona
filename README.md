@@ -42,35 +42,13 @@ A aplicação é composta por quatro serviços independentes que rodam em contê
 
 **Passo 1: Clonar o Repositório**
 ```bash
-git clone [URL_DO_SEU_REPOSITORIO_AQUI]
-cd [NOME_DA_PASTA_DO_PROJETO]
+git clone [link](https://github.com/KronosZbr/Sistema-de-Traducao-Assincrona)]
 ```
-
-**Passo 2: Criar o Script de Inicialização do Banco**
-
-Na raiz do projeto, crie a pasta `postgres-init` e, dentro dela, o arquivo `init.sql`:
-```sql
--- postgres-init/init.sql
-CREATE TABLE IF NOT EXISTS translations (
-    request_id UUID PRIMARY KEY,
-    original_text TEXT NOT NULL,
-    target_language VARCHAR(10) NOT NULL,
-    status VARCHAR(20) NOT NULL,
-    translated_text TEXT,
-    detected_source_language VARCHAR(10),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
-GRANT ALL PRIVILEGES ON TABLE translations TO tradutor_user;
-GRANT USAGE ON SCHEMA public TO tradutor_user;
-```
-
-**Passo 3: Configurar a Senha**
+**Passo 2: Configurar a Senha**
 
 Abra o arquivo `docker-compose.yml` e substitua os 3 locais com `user` pela senha que desejar.
 
-**Passo 4: Construir e Iniciar os Contêineres**
+**Passo 3: Construir e Iniciar os Contêineres**
 
 Com o terminal aberto na pasta raiz do projeto, execute os seguintes comandos:
 ```bash
@@ -81,7 +59,7 @@ docker-compose build
 docker-compose up
 ```
 
-**Passo 5: Acessar a Aplicação**
+**Passo 4: Acessar a Aplicação**
 
 - **Aplicação Web:** [http://localhost:3001](http://localhost:3001)
 - **Interface do RabbitMQ:** [http://localhost:15672](http://localhost:15672) (usuário: `guest`, senha: `guest`)
@@ -92,12 +70,3 @@ docker-compose up
 # Pressione Ctrl + C no terminal onde o 'up' está rodando, ou rode em outro terminal:
 docker-compose down
 ```
-
-## ✒️ Autor
-
-**[Seu Nome Completo Aqui]**
-- GitHub: `[@seu-usuario-aqui]`
-- LinkedIn: `[link-do-seu-linkedin-aqui]`
-
----
-*Este projeto foi desenvolvido com a colaboração do assistente Gemini.*
