@@ -42,7 +42,7 @@ A aplicação é composta por quatro serviços independentes que rodam em contê
 
 **Passo 1: Clonar o Repositório**
 ```bash
-git clone [link](https://github.com/KronosZbr/Sistema-de-Traducao-Assincrona)]
+git clone https://github.com/KronosZbr/Sistema-de-Traducao-Assincrona
 ```
 **Passo 2: Configurar a Senha**
 
