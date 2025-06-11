@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tradutor Assíncrono (Polling)</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Tradutor Assíncrono <span>para pt-br</span></h1>
+        <form id="translation-form">
+            <textarea id="text-to-translate" placeholder="Digite ou cole o texto aqui..." rows="5"></textarea>
+            <button type="submit" id="submit-button">Traduzir</button>
+        </form>
+        <div id="result-container" class="result">
+            <p>Aguardando texto para traduzir...</p>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('translation-form');
+        const textInput = document.getElementById('text-to-translate');
+        const resultContainer = document.getElementById('result-container');
+        const submitButton = document.getElementById('submit-button');
+        let pollingInterval = null;
+        async function checkStatus(requestId) {
+            console.log(`Verificando status do ID: ${requestId}`);
+            try {
+                const response = await fetch(`/api/translations/${requestId}`);
+                const data = await response.json();
+                if (data.status === 'completed' || data.status === 'failed') {
+                    clearInterval(pollingInterval);
+                    submitButton.disabled = false;
+                    
+                    if (data.status === 'completed') {
+                        const sourceLang = data.detected_source_language?.toUpperCase() || 'N/A';
+                        resultContainer.innerHTML = `
+                            <p>Tradução concluída (ID: ${data.request_id.substring(0, 8)}...)</p>
+                            <p>Idioma detectado: <strong>${sourceLang}</strong></p>
+                            <h2>Resultado:</h2>
+                            <p class="translated-text">${data.translated_text}</p>
+                        `;
+                    } else {
+                        resultContainer.innerHTML = `<p class="error">A tradução falhou.</p>`;
+                    }
+                }
+
+            } catch (error) {
+                console.error('Erro ao verificar status:', error);
+                resultContainer.innerHTML = `<p class="error">Erro ao verificar o status.</p>`;
+                clearInterval(pollingInterval);
+                submitButton.disabled = false;
+            }
+        }
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            if (pollingInterval) clearInterval(pollingInterval);
+
+            const text = textInput.value;
+            if (!text.trim()) return;
+            
+            submitButton.disabled = true;
+            resultContainer.innerHTML = `<p>Enviando requisição...</p>`;
+
+            try {
+                const response = await fetch('/api/translations', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text })
+                });
+                
+                const data = await response.json();
+                
+                if (response.status === 202) {
+                    resultContainer.innerHTML = `<p>Tradução em andamento... (ID: ${data.requestId.substring(0, 8)}...)</p>`;
+                    pollingInterval = setInterval(() => checkStatus(data.requestId), 3000);
+                } else {
+                    resultContainer.innerHTML = `<p class="error">${data.error || 'Erro ao submeter.'}</p>`;
+                    submitButton.disabled = false;
+                }
+            } catch (error) {
+                resultContainer.innerHTML = `<p class="error">Não foi possível conectar à API.</p>`;
+                submitButton.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

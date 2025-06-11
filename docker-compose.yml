@@ -1,0 +1,58 @@
+services:
+ 
+  postgres:
+    image: postgres:15-alpine
+    container_name: o-arquivo 
+    environment:
+      POSTGRES_USER: tradutor_user
+      POSTGRES_PASSWORD: user
+      POSTGRES_DB: translations_db
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres-init/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: o-mensageiro 
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  
+  api:
+    build: ./backend-api
+    container_name: ponto-de-contato 
+    ports:
+      - "3001:3001"
+    environment:
+      DB_USER: tradutor_user
+      DB_HOST: o-arquivo 
+      DB_DATABASE: translations_db
+      DB_PASSWORD: user
+      DB_PORT: 5432
+      RABBITMQ_URL: amqp://o-mensageiro 
+      PORT: 3001
+    depends_on:
+      - postgres
+      - rabbitmq
+
+  
+  worker:
+    build: ./backend-worker
+    container_name: o-tradutor 
+    environment:
+      DB_USER: tradutor_user
+      DB_HOST: o-arquivo 
+      DB_DATABASE: translations_db
+      DB_PASSWORD: user
+      DB_PORT: 5432
+      RABBITMQ_URL: amqp://o-mensageiro 
+    depends_on:
+      - postgres
+      - rabbitmq
+
+volumes:
+  postgres-data:
